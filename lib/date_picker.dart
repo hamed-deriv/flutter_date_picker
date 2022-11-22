@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_date_picker/enums.dart';
+import 'package:flutter_date_picker/extensions.dart';
 
 class DatePicker extends StatelessWidget {
   const DatePicker({Key? key}) : super(key: key);
@@ -8,10 +9,36 @@ class DatePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: <Widget>[
+          buildMonthSelector(),
+          const SizedBox(height: 16),
           buildDaysOfWeek(context),
           const SizedBox(height: 4),
           buildDays(context, daysOfWeek.wednesday, 30),
         ],
+      );
+
+  Widget buildMonthSelector() => Container(
+        height: 32,
+        width: 128,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.grey),
+        ),
+        child: DropdownButton<monthOfYear>(
+          isExpanded: true,
+          underline: const SizedBox.shrink(),
+          value: monthOfYear.january,
+          items: monthOfYear.values
+              .map(
+                (monthOfYear month) => DropdownMenuItem<monthOfYear>(
+                  value: month,
+                  child: Text(month.capitalize),
+                ),
+              )
+              .toList(),
+          onChanged: (monthOfYear? month) {},
+        ),
       );
 }
 

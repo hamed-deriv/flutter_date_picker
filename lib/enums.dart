@@ -8,8 +8,17 @@ enum daysOfWeek {
   saturday,
 }
 
-extension DaysOfWeek on daysOfWeek {
-  String get abbreviate => '${name[0].toUpperCase()}${name[1]}';
-
-  String get capitalize => '${name[0].toUpperCase()}${name.substring(1)}';
+enum monthOfYear {
+  january,
+  february,
+  march,
+  april,
+  may,
+  june,
+  july,
+  august,
+  september,
+  october,
+  november,
+  december,
 }
