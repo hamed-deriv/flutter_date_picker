@@ -3,17 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_date_picker/enums.dart';
 import 'package:flutter_date_picker/extensions.dart';
 
-class DatePicker extends StatelessWidget {
+class DatePicker extends StatefulWidget {
   const DatePicker({Key? key}) : super(key: key);
+
+  @override
+  State<DatePicker> createState() => _DatePickerState();
+}
+
+class _DatePickerState extends State<DatePicker> {
+  late monthOfYear _selectedMonth;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _selectedMonth = monthOfYear.values[DateTime.now().month - 1];
+  }
 
   @override
   Widget build(BuildContext context) => Column(
         children: <Widget>[
           buildMonthSelector(),
           const SizedBox(height: 16),
-          buildDaysOfWeek(context),
+          buildDaysOfWeek(),
           const SizedBox(height: 4),
-          buildDays(context, daysOfWeek.wednesday, 30),
+          buildDays(daysOfWeek.monday, 30),
         ],
       );
 
@@ -28,7 +42,7 @@ class DatePicker extends StatelessWidget {
         child: DropdownButton<monthOfYear>(
           isExpanded: true,
           underline: const SizedBox.shrink(),
-          value: monthOfYear.january,
+          value: _selectedMonth,
           items: monthOfYear.values
               .map(
                 (monthOfYear month) => DropdownMenuItem<monthOfYear>(
@@ -37,22 +51,24 @@ class DatePicker extends StatelessWidget {
                 ),
               )
               .toList(),
-          onChanged: (monthOfYear? month) {},
+          onChanged: (monthOfYear? month) => setState(
+            () => _selectedMonth = month!,
+          ),
         ),
       );
 }
 
-Widget buildDaysOfWeek(BuildContext context) => Padding(
+Widget buildDaysOfWeek() => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: daysOfWeek.values
-            .map<Widget>((daysOfWeek day) => buildDayOfWeek(context, day))
+            .map<Widget>((daysOfWeek day) => buildDayOfWeek(day))
             .toList(),
       ),
     );
 
-Widget buildDayOfWeek(BuildContext context, daysOfWeek dayOWeek) => Container(
+Widget buildDayOfWeek(daysOfWeek dayOWeek) => Container(
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(4)),
         color: Colors.blue,
@@ -71,7 +87,7 @@ Widget buildDayOfWeek(BuildContext context, daysOfWeek dayOWeek) => Container(
       ),
     );
 
-Widget buildDays(BuildContext context, daysOfWeek startDay, int totalDays) {
+Widget buildDays(daysOfWeek startDay, int totalDays) {
   const int daysOfWeek = 7;
   final List<int> days =
       List<int>.generate(startDay.index + totalDays, (int index) => index);
@@ -89,14 +105,14 @@ Widget buildDays(BuildContext context, daysOfWeek startDay, int totalDays) {
 
           return currentDay.isNegative
               ? const SizedBox.shrink()
-              : Center(child: buildDayWidget(context, currentDay + 1));
+              : Center(child: buildDayWidget(currentDay + 1));
         },
       ).toList(),
     ),
   );
 }
 
-Widget buildDayWidget(BuildContext context, int day) => Padding(
+Widget buildDayWidget(int day) => Padding(
       padding: const EdgeInsets.all(4),
       child: Container(
         decoration: const BoxDecoration(
