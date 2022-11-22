@@ -6,34 +6,34 @@ class DatePicker extends StatelessWidget {
   const DatePicker({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: daysOfWeek.values
-              .map<Widget>((daysOfWeek day) => Text(day.abbreviate))
-              .toList(),
-        ),
-        generateDays(daysOfWeek.wednesday, 30),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: daysOfWeek.values
+                .map<Widget>((daysOfWeek day) => Text(day.abbreviate))
+                .toList(),
+          ),
+          generateDays(daysOfWeek.wednesday, 30),
+        ],
+      );
 }
 
 Widget generateDays(daysOfWeek startDay, int totalDays) {
-  List<int> days = List.generate(startDay.index + totalDays, (index) => index);
+  const int daysOfWeek = 7;
+  final List<int> days =
+      List<int>.generate(startDay.index + totalDays, (int index) => index);
 
   return GridView(
     shrinkWrap: true,
-    gridDelegate:
-        const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: daysOfWeek,
+    ),
     children: days.map<Widget>(
       (int day) {
-        int currentDay = day - startDay.index;
+        final int currentDay = day - startDay.index;
 
-        return currentDay < 0
+        return currentDay.isNegative
             ? const SizedBox.shrink()
             : Center(child: Text('${currentDay + 1}'));
       },
