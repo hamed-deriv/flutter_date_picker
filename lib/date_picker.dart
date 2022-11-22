@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_date_picker/enums.dart';
 import 'package:flutter_date_picker/extensions.dart';
+import 'package:flutter_date_picker/helpers.dart';
 
 class DatePicker extends StatefulWidget {
   const DatePicker({Key? key}) : super(key: key);
@@ -11,24 +12,62 @@ class DatePicker extends StatefulWidget {
 }
 
 class _DatePickerState extends State<DatePicker> {
+  late final List<int> _years;
+
+  late int _selectedYear;
   late monthOfYear _selectedMonth;
 
   @override
   void initState() {
     super.initState();
 
+    _selectedYear = DateTime.now().year;
     _selectedMonth = monthOfYear.values[DateTime.now().month - 1];
+
+    _years = List<int>.generate(5, (int index) => _selectedYear + index);
   }
 
   @override
   Widget build(BuildContext context) => Column(
         children: <Widget>[
-          buildMonthSelector(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              buildYearSelector(),
+              const SizedBox(width: 8),
+              buildMonthSelector(),
+            ],
+          ),
           const SizedBox(height: 16),
           buildDaysOfWeek(),
           const SizedBox(height: 4),
-          buildDays(daysOfWeek.monday, 30),
+          buildDays(
+            getFirstDayOfWeek(year: _selectedYear, month: _selectedMonth),
+            getMonthDaysCount(year: _selectedYear, month: _selectedMonth),
+          ),
         ],
+      );
+
+  Widget buildYearSelector() => Container(
+        height: 32,
+        width: 128,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.grey),
+        ),
+        child: DropdownButton<int>(
+          isExpanded: true,
+          underline: const SizedBox.shrink(),
+          value: _selectedYear,
+          items: _years
+              .map(
+                (int year) =>
+                    DropdownMenuItem<int>(value: year, child: Text('$year')),
+              )
+              .toList(),
+          onChanged: (int? year) => setState(() => _selectedYear = year!),
+        ),
       );
 
   Widget buildMonthSelector() => Container(
@@ -51,100 +90,99 @@ class _DatePickerState extends State<DatePicker> {
                 ),
               )
               .toList(),
-          onChanged: (monthOfYear? month) => setState(
-            () => _selectedMonth = month!,
+          onChanged: (monthOfYear? month) =>
+              setState(() => _selectedMonth = month!),
+        ),
+      );
+
+  Widget buildDaysOfWeek() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: daysOfWeek.values
+              .map<Widget>((daysOfWeek day) => buildDayOfWeek(day))
+              .toList(),
+        ),
+      );
+
+  Widget buildDayOfWeek(daysOfWeek dayOWeek) => Container(
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(4)),
+          color: Colors.blue,
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        width: 50,
+        child: Center(
+          child: Text(
+            dayOWeek.abbreviate,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+
+  Widget buildDays(daysOfWeek startDay, int totalDays) {
+    const int daysOfWeek = 7;
+    final List<int> days =
+        List<int>.generate(startDay.index + totalDays, (int index) => index);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 3),
+      child: GridView(
+        shrinkWrap: true,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: daysOfWeek,
+        ),
+        children: days.map<Widget>(
+          (int day) {
+            final int currentDay = day - startDay.index;
+
+            return currentDay.isNegative
+                ? const SizedBox.shrink()
+                : Center(child: buildDayWidget(currentDay + 1));
+          },
+        ).toList(),
+      ),
+    );
+  }
+
+  Widget buildDayWidget(int day) => Padding(
+        padding: const EdgeInsets.all(4),
+        child: Container(
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(4)),
+            color: Colors.red,
+          ),
+          child: Center(
+            child: Stack(
+              children: <Widget>[
+                Positioned(
+                  top: 8,
+                  left: 10,
+                  child: Text(
+                    '$day',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 32,
+                  left: 32,
+                  child: Text(
+                    '$day',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
 }
-
-Widget buildDaysOfWeek() => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: daysOfWeek.values
-            .map<Widget>((daysOfWeek day) => buildDayOfWeek(day))
-            .toList(),
-      ),
-    );
-
-Widget buildDayOfWeek(daysOfWeek dayOWeek) => Container(
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(4)),
-        color: Colors.blue,
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-      width: 50,
-      child: Center(
-        child: Text(
-          dayOWeek.abbreviate,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-
-Widget buildDays(daysOfWeek startDay, int totalDays) {
-  const int daysOfWeek = 7;
-  final List<int> days =
-      List<int>.generate(startDay.index + totalDays, (int index) => index);
-
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 3),
-    child: GridView(
-      shrinkWrap: true,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: daysOfWeek,
-      ),
-      children: days.map<Widget>(
-        (int day) {
-          final int currentDay = day - startDay.index;
-
-          return currentDay.isNegative
-              ? const SizedBox.shrink()
-              : Center(child: buildDayWidget(currentDay + 1));
-        },
-      ).toList(),
-    ),
-  );
-}
-
-Widget buildDayWidget(int day) => Padding(
-      padding: const EdgeInsets.all(4),
-      child: Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(4)),
-          color: Colors.red,
-        ),
-        child: Center(
-          child: Stack(
-            children: <Widget>[
-              Positioned(
-                top: 8,
-                left: 10,
-                child: Text(
-                  '$day',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 32,
-                left: 32,
-                child: Text(
-                  '$day',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
